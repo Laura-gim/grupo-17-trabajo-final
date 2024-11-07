@@ -245,6 +245,17 @@ class Paciente:
             self.telefono = telefono
         print(f"Datos personales actualizados para el paciente con ID {self.id_medico}.")
 
+    def mostrar_historial(self, nodo, nivel=0):
+        # Muestra el historial clínico en formato de árbol con indentación
+        if nodo is not None:
+        # Muestra el evento actual con indentación
+            print("  " * nivel + f"- {nodo.evento}")
+            
+        # Recorre los hijos del nodo (consultas, diagnósticos, tratamientos)
+            hijo = nodo.hijos
+            while hijo is not None:
+                self.mostrar_historial(hijo, nivel + 1)  # Aumenta el nivel para la indentación
+                hijo = hijo.sig
  
     
 
@@ -296,6 +307,11 @@ def ingresar_datos_paciente():
         print(f"Error en los datos ingresados: {e}")
         return None
 
+def mostrar_informacion_paciente(arbol, id_medico):
+    paciente = arbol.buscar(id_medico)
+    if paciente:
+        paciente.mostrar_informacion()
+
 
 def mostrar_informacion(self):
     print(f"\nInformación del Paciente: {self.nombres} {self.apellido}")
@@ -312,17 +328,6 @@ def mostrar_informacion(self):
     else:
         print("\nNo se ha iniciado un historial clínico para este paciente.")
 
-def mostrar_historial(self, nodo, nivel=0):
-        # Muestra el historial clínico en formato de árbol con indentación
-    if nodo is not None:
-        # Muestra el evento actual con indentación
-        print("  " * nivel + f"- {nodo.evento}")
-            
-        # Recorre los hijos del nodo (consultas, diagnósticos, tratamientos)
-        hijo = nodo.hijos
-        while hijo is not None:
-            self.mostrar_historial(hijo, nivel + 1)  # Aumenta el nivel para la indentación
-            hijo = hijo.sig
 
 
 
@@ -426,6 +431,7 @@ def menu_principal():
         print("5. Gestionar historial y tratamientos de un paciente")
         print("6. Gestionar turnos")
         print("7. Salir")
+        
         opcion = input("Seleccione una opción: ")
 
         if opcion == '1':
@@ -474,6 +480,7 @@ def menu_principal():
         elif opcion == '7':
             print("Saliendo del sistema.")
             break
+  
         else:
             print("Opción no válida.")
 
