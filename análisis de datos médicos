@@ -1,0 +1,481 @@
+class EventosMedico:
+    def __init__(self, tipo, descripcion):
+        self.tipo = tipo  # Tipo de evento, como "Consulta", "Diagnostico" o "Tratamiento"
+        self.descripcion = descripcion  # Descripción del evento
+
+    def __str__(self):
+        return f"{self.tipo}: {self.descripcion}"
+
+class Arbol_General:
+    # Clase que representa un nodo del árbol
+    def __init__(self, evento):
+        self.evento = evento  # Información del evento médico (objeto de EventosMedico)
+        self.sig = None       # Referencia al siguiente hermano
+        self.hijos = None     # Referencia a la lista de hijos del nodo
+
+def arbol_vacio(raiz):
+    # Verifica si el árbol está vacío
+    return raiz is None
+
+def agregar_hijo_raiz(raiz, evento):
+    # Inserta el evento en la raíz del árbol
+    if arbol_vacio(raiz):
+        raiz = Arbol_General(evento)
+    else:
+        raiz = agregar_nodo(raiz, evento)
+    return raiz
+
+def agregar_nodo(raiz, evento):
+    # Crea un nuevo nodo con el evento dado y lo agrega como hijo
+    nodo = Arbol_General(evento)
+    if raiz.hijos is None:
+        raiz.hijos = nodo
+    else:
+        anterior = raiz.hijos
+        actual = raiz.hijos.sig
+        while actual is not None:
+            anterior = anterior.sig
+            actual = actual.sig
+        anterior.sig = nodo
+    return raiz
+
+def agregar_hijo_nodo(raiz, evento_padre, evento):
+    # Agrega un hijo a un nodo específico del árbol
+    if not arbol_vacio(raiz):
+        nodo_encontrado = buscar_nodo(raiz, evento_padre)
+        if nodo_encontrado:
+            agregar_nodo(nodo_encontrado, evento)
+    return raiz
+
+def buscar_nodo(raiz, evento):
+    # Busca un nodo en el árbol dado su evento
+    if raiz is None:
+        return None
+    if raiz.evento.descripcion == evento.descripcion and raiz.evento.tipo == evento.tipo:
+        return raiz
+    hijo = raiz.hijos
+    while hijo is not None:
+        encontrado = buscar_nodo(hijo, evento)
+        if encontrado:
+            return encontrado
+        hijo = hijo.sig
+    return None
+
+def eliminar_nodo(raiz, evento_padre, evento_a_eliminar):
+    # Elimina un nodo específico del árbol
+    nodo_padre = buscar_nodo(raiz, evento_padre)
+    if nodo_padre and nodo_padre.hijos:
+        actual = nodo_padre.hijos
+        anterior = None
+        while actual is not None:
+            if actual.evento.descripcion == evento_a_eliminar.descripcion and actual.evento.tipo == evento_a_eliminar.tipo:
+                # Eliminar nodo
+                if anterior is None:
+                    nodo_padre.hijos = actual.sig  # Eliminar primer hijo
+                else:
+                    anterior.sig = actual.sig      # Eliminar nodo intermedio o final
+                return True
+            anterior = actual
+            actual = actual.sig
+    return False  # Retorna False si no encontró el nodo
+
+def preorden(raiz):
+    if raiz is not None:
+        print(raiz.evento)
+        hijos = raiz.hijos
+        while hijos is not None:
+            preorden(hijos)
+            hijos = hijos.sig
+
+def postorden(raiz):
+    if raiz is not None:
+        hijos = raiz.hijos
+        while hijos is not None:
+            postorden(hijos)
+            hijos = hijos.sig
+        print(raiz.evento)
+class NodoBST:
+    def __init__(self, paciente):
+        self.paciente = paciente
+        self.izq = None
+        self.der = None
+
+class ArbolPacientesBST:
+    def __init__(self):
+        self.raiz = None
+
+    def insertar(self, paciente):
+        if self.raiz is None:
+            self.raiz = NodoBST(paciente)
+            print(f"Paciente {paciente.nombres} {paciente.apellido} (ID: {paciente.id_medico}) insertado con éxito.")
+        else:
+            self._insertar_recursivo(self.raiz, paciente)
+
+    def _insertar_recursivo(self, nodo, paciente):
+        if paciente.id_medico < nodo.paciente.id_medico:
+            if nodo.izq is None:
+                nodo.izq = NodoBST(paciente)
+                print(f"Paciente {paciente.nombres} {paciente.apellido} (ID: {paciente.id_medico}) insertado a la izquierda de {nodo.paciente.nombres}.")
+            else:
+                self._insertar_recursivo(nodo.izq, paciente)
+        elif paciente.id_medico > nodo.paciente.id_medico:
+            if nodo.der is None:
+                nodo.der = NodoBST(paciente)
+                print(f"Paciente {paciente.nombres} (ID: {paciente.id_medico}) insertado a la derecha de {nodo.paciente.nombres}.")
+            else:
+                self._insertar_recursivo(nodo.der, paciente)
+        else:
+            print(f"El paciente con ID {paciente.id_medico} ya existe en el sistema.")
+    def buscar(self, id_medico):
+        #Busca un paciente por su ID en el árbol binario de búsqueda
+        resultado = self._buscar_recursivo(self.raiz, id_medico)
+        if resultado:
+            print(f"Paciente encontrado: {resultado.nombres} (ID: {resultado.id_medico}).")
+        else:
+            print(f"No se encontró ningún paciente con ID {id_medico}.")
+        return resultado
+
+    def _buscar_recursivo(self, nodo, id_medico):
+        
+        if nodo is None:
+            return None
+        elif nodo.paciente.id_medico == id_medico:
+            return nodo.paciente
+        elif id_medico < nodo.paciente.id_medico:
+            return self._buscar_recursivo(nodo.izq, id_medico)
+        else:
+            return self._buscar_recursivo(nodo.der, id_medico)
+
+    def eliminar(self, id_medico):
+        # Elimina un paciente por su ID en el árbol binario de búsqueda
+        self.raiz = self._eliminar_recursivo(self.raiz, id_medico)
+
+    def _eliminar_recursivo(self, nodo, id_medico):
+        if nodo is None:
+            print(f"No se encontró ningún paciente con ID {id_medico}.")
+            return None
+
+        if id_medico < nodo.paciente.id_medico:
+            nodo.izq = self._eliminar_recursivo(nodo.izq, id_medico)
+        elif id_medico > nodo.paciente.id_medico:
+            nodo.der = self._eliminar_recursivo(nodo.der, id_medico)
+        else:
+            # Caso 1: Nodo sin hijos
+            if nodo.izq is None and nodo.der is None:
+                print(f"Paciente {nodo.paciente.nombres} {nodo.paciente.apellido} eliminado.")
+                return None
+            # Caso 2: Nodo con un solo hijo
+            elif nodo.izq is None:
+                print(f"Paciente {nodo.paciente.nombres} {nodo.paciente.apellido} eliminado.")
+                return nodo.der
+            elif nodo.der is None:
+                print(f"Paciente {nodo.paciente.nombres} {nodo.paciente.apellido} eliminado.")
+                return nodo.izq
+            # Caso 3: Nodo con dos hijos
+            else:
+                sucesor = self._encontrar_min(nodo.der)
+                nodo.paciente = sucesor.paciente
+                nodo.der = self._eliminar_recursivo(nodo.der, sucesor.paciente.id_medico)
+        return nodo
+
+    def _encontrar_min(self, nodo):
+        # Encuentra el nodo con el valor mínimo en el subárbol dado (sucesor inorden)
+        while nodo.izq is not None:
+            nodo = nodo.izq
+        return nodo
+
+
+
+class Paciente:
+    def __init__(self, id_medico, apellido, nombres, dni, edad, genero, direccion, telefono):
+        self.id_medico = id_medico
+        self.apellido = apellido
+        self.nombres = nombres
+        self.dni = dni
+        self.edad = edad
+        self.genero = genero
+        self.direccion = direccion
+        self.telefono = telefono
+        self.historial_clinico = None
+
+    def __str__(self):
+        #Devuelve una representación en texto del paciente para facilitar la visualización
+        return (f"Paciente: {self.nombres} {self.apellido}, DNI: {self.dni}, ID Médico: {self.id_medico}, "
+                f"Edad: {self.edad}, Género: {self.genero}, Dirección: {self.direccion}, Teléfono: {self.telefono}")    
+
+    def agregar_evento_raiz(self, evento):
+        if self.historial_clinico is None:
+            self.historial_clinico = Arbol_General(evento)
+            print(f"Evento raíz '{evento.descripcion}' agregado.")
+        else:
+            self.historial_clinico = agregar_nodo(self.historial_clinico, evento)
+
+    def agregar_evento(self, evento_padre, nuevo_evento):
+        self.historial_clinico = agregar_hijo_nodo(self.historial_clinico, evento_padre, nuevo_evento)
+
+    def eliminar_evento(self, evento_padre, evento_a_eliminar):
+        if eliminar_nodo(self.historial_clinico, evento_padre, evento_a_eliminar):
+            print(f"Evento '{evento_a_eliminar.descripcion}' eliminado.")
+        else:
+            print(f"Evento '{evento_a_eliminar.descripcion}' no encontrado.")
+
+    def mostrar_historial_preorden(self): # no se usó
+        print("\nHistorial Médico (Preorden):")
+        preorden(self.historial_clinico)
+
+    def mostrar_historial_postorden(self):# no se usó
+        print("\nHistorial Médico (Postorden):")
+        postorden(self.historial_clinico)
+
+    def actualizar_datos_personales(self, apellido=None, nombres=None, dni=None, genero=None, edad=None, direccion=None, telefono=None):
+       # funcion para actualizar datos personales
+        if apellido:
+            self.apellido = apellido
+        if nombres:
+            self.nombres = nombres
+        if dni:
+            self.dni = dni
+        if genero:
+            self.genero = genero
+        if edad:
+            self.edad = edad
+        if direccion:
+            self.direccion = direccion
+        if telefono:
+            self.telefono = telefono
+        print(f"Datos personales actualizados para el paciente con ID {self.id_medico}.")
+
+ 
+    
+
+
+import heapq # sirve para implementar un algoritmo de ordenación similar a un arbol. (se puede reemplazar por una estructura de cola, hay que pensarlo)
+
+
+# Clase para gestionar los turnos. se puede modificar para agregar un limite al numero de turnos otorgados. se puede hacer una estructura diferente
+
+class Turno:
+    def __init__(self, paciente, prioridad):
+        self.paciente = paciente
+        self.prioridad = prioridad  # 0 para urgente, 1 para regular
+
+    def __lt__(self, otro):
+        return self.prioridad < otro.prioridad
+
+class ColaDeTurnos:
+    def __init__(self):
+        self.turnos = []
+
+    def agregar_turno(self, paciente, es_urgente):
+        prioridad = 0 if es_urgente else 1
+        turno = Turno(paciente, prioridad)
+        heapq.heappush(self.turnos, turno)
+        print(f"Turno {'urgente' if es_urgente else 'regular'} asignado a {paciente.nombres} {paciente.apellido}.")
+
+    def siguiente_turno(self):
+        if not self.turnos:
+            print("No hay turnos en espera.")
+            return None
+        turno = heapq.heappop(self.turnos)
+        print(f"Próximo turno para {turno.paciente.nombres} {turno.paciente.apellido}.")
+        return turno.paciente
+
+# Funciones del menú
+def ingresar_datos_paciente():
+    try:
+        id_medico = int(input("Ingrese el ID médico del paciente: "))
+        apellido = input("Ingrese el apellido del paciente: ")
+        nombres = input("Ingrese el nombre del paciente: ")
+        dni = int(input("Ingrese el DNI del paciente: "))
+        edad = int(input("Ingrese la edad del paciente: "))
+        genero = input("Ingrese el género del paciente: ")
+        direccion = input("Ingrese la dirección del paciente: ")
+        telefono = input("Ingrese el teléfono del paciente: ")
+        return Paciente(id_medico, apellido, nombres, dni, edad, genero, direccion, telefono)
+    except ValueError as e:
+        print(f"Error en los datos ingresados: {e}")
+        return None
+
+
+def mostrar_informacion(self):
+    print(f"\nInformación del Paciente: {self.nombres} {self.apellido}")
+    print(f"ID Médico: {self.id_medico}")
+    print(f"DNI: {self.dni}")
+    print(f"Edad: {self.edad}")
+    print(f"Género: {self.genero}")
+    print(f"Dirección: {self.direccion}")
+    print(f"Teléfono: {self.telefono}")
+        
+    if self.historial_clinico:
+        print("\nHistorial Clínico:")
+        self.mostrar_historial(self.historial_clinico, nivel=0)
+    else:
+        print("\nNo se ha iniciado un historial clínico para este paciente.")
+
+def mostrar_historial(self, nodo, nivel=0):
+        # Muestra el historial clínico en formato de árbol con indentación
+    if nodo is not None:
+        # Muestra el evento actual con indentación
+        print("  " * nivel + f"- {nodo.evento}")
+            
+        # Recorre los hijos del nodo (consultas, diagnósticos, tratamientos)
+        hijo = nodo.hijos
+        while hijo is not None:
+            self.mostrar_historial(hijo, nivel + 1)  # Aumenta el nivel para la indentación
+            hijo = hijo.sig
+
+
+
+def actualizar_datos_paciente(paciente):
+    print("Deje el campo vacío si no desea cambiarlo.")
+    apellido = input("Nuevo apellido: ")
+    nombres = input("Nuevo nombre: ")
+    dni = input("Nuevo DNI: ")
+    edad = input("Nueva edad: ")
+    genero = input("Nuevo género: ")
+    direccion = input("Nueva dirección: ")
+    telefono = input("Nuevo teléfono: ")
+    paciente.actualizar_datos_personales(
+        apellido=apellido or None,
+        nombres=nombres or None,
+        dni=int(dni) if dni else None,
+        edad=int(edad) if edad else None,
+        genero=genero or None,
+        direccion=direccion or None,
+        telefono=telefono or None
+    )
+def mostrar_evento(evento, nivel):
+    print("  " * nivel + f"- {evento.descripcion}")
+    for subevento in evento.subeventos:
+        mostrar_evento(subevento, nivel + 1)
+
+    
+
+def gestionar_historial(paciente):
+    raiz=None
+    while True:
+        print("\nOpciones del Historial Médico:")
+        print("1. Agregar Consulta")
+        print("2. Agregar Diagnóstico a Consulta")
+        print("3. Agregar Tratamiento a Diagnóstico")
+        print("4. Eliminar Consulta")
+        print("5. Eliminar Diagnóstico de Consulta")
+        print("6. Eliminar Tratamiento de Diagnóstico")
+        print("7. Mostrar historial clínico completo")
+        print("8. Volver al menú principal")
+        opcion = input("Seleccione una opción: ")
+
+        if opcion == "1":
+            descripcion = input("Ingrese la descripción de la consulta: ")
+            consulta = EventosMedico("Consulta", descripcion)
+            paciente.agregar_evento_raiz(consulta)
+        
+        elif opcion == "2":
+            consulta_desc = input("Ingrese la descripción de la consulta a la que agregar el diagnóstico: ")
+            descripcion = input("Ingrese la descripción del diagnóstico: ")
+            diagnostico = EventosMedico("Diagnostico", descripcion)
+            consulta_evento = EventosMedico("Consulta", consulta_desc)
+            paciente.agregar_evento(consulta_evento, diagnostico)
+        
+        elif opcion == "3":
+            diag_desc = input("Ingrese la descripción del diagnóstico al que agregar el tratamiento: ")
+            descripcion = input("Ingrese la descripción del tratamiento: ")
+            tratamiento = EventosMedico("Tratamiento", descripcion)
+            diagnostico_evento = EventosMedico("Diagnostico", diag_desc)
+            paciente.agregar_evento(diagnostico_evento, tratamiento)
+        
+        
+        elif opcion == "4":
+            consulta_desc = input("Ingrese la descripción de la consulta a eliminar: ")
+            consulta_evento = EventosMedico("Consulta", consulta_desc)
+            paciente.eliminar_evento(EventosMedico("Consulta", ""), consulta_evento)
+        
+        elif opcion == "5":
+            consulta_desc = input("Ingrese la descripción de la consulta que contiene el diagnóstico: ")
+            diag_desc = input("Ingrese la descripción del diagnóstico a eliminar: ")
+            consulta_evento = EventosMedico("Consulta", consulta_desc)
+            diagnostico_evento = EventosMedico("Diagnostico", diag_desc)
+            paciente.eliminar_evento(consulta_evento, diagnostico_evento)
+
+        elif opcion == "6":
+            diag_desc = input("Ingrese la descripción del diagnóstico que contiene el tratamiento: ")
+            trat_desc = input("Ingrese la descripción del tratamiento a eliminar: ")
+            diagnostico_evento = EventosMedico("Diagnostico", diag_desc)
+            tratamiento_evento = EventosMedico("Tratamiento", trat_desc)
+            paciente.eliminar_evento(diagnostico_evento, tratamiento_evento)
+
+        elif opcion == '7':
+            mostrar_informacion(paciente)
+        elif opcion == '8':
+            break
+        else:
+            print("Opción no válida.")
+
+
+# Menú principal de gestión de pacientes
+def menu_principal():
+    arbol_pacientes = ArbolPacientesBST()
+    cola_turnos = ColaDeTurnos()
+
+    while True:
+        print("\nGestión de Pacientes")
+        print("1. Ingresar nuevo paciente")
+        print("2. Eliminar paciente")
+        print("3. Buscar paciente")
+        print("4. Actualizar datos de un paciente")
+        print("5. Gestionar historial y tratamientos de un paciente")
+        print("6. Gestionar turnos")
+        print("7. Salir")
+        opcion = input("Seleccione una opción: ")
+
+        if opcion == '1':
+            paciente = ingresar_datos_paciente()
+            if paciente:
+                arbol_pacientes.insertar(paciente)
+        elif opcion == '2':
+            id_medico = int(input("Ingrese el ID del paciente a eliminar: "))
+            paciente=arbol_pacientes.eliminar(id_medico)
+            
+            # Implementación de eliminar paciente (se debería agregar una función de eliminación en el árbol)
+        elif opcion == '3':
+            id_medico = int(input("Ingrese el ID del paciente a buscar: "))           
+            paciente= arbol_pacientes.buscar(id_medico)
+            mostrar_informacion(paciente)
+        elif opcion == '4':
+            id_medico = int(input("Ingrese el ID del paciente a actualizar: "))
+            paciente = arbol_pacientes.buscar(id_medico)
+            if paciente:
+                actualizar_datos_paciente(paciente)
+        elif opcion == '5':
+            id_medico = int(input("Ingrese el ID del paciente a gestionar: "))
+            paciente = arbol_pacientes.buscar(id_medico)
+            if paciente:
+                gestionar_historial(paciente)
+        elif opcion == '6':
+            while True:
+                print("\nGestión de Turnos")
+                print("1. Asignar turno")
+                print("2. Llamar al siguiente turno")
+                print("3. Volver al menú principal")
+                opcion_turno = input("Seleccione una opción: ")
+
+                if opcion_turno == '1':
+                    id_medico = int(input("Ingrese el ID del paciente para asignar turno: "))
+                    paciente = arbol_pacientes.buscar(id_medico)
+                    if paciente:
+                        es_urgente = input("¿Es un turno urgente? (s/n): ").lower() == 's'
+                        cola_turnos.agregar_turno(paciente, es_urgente)
+                elif opcion_turno == '2':
+                    cola_turnos.siguiente_turno()
+                elif opcion_turno == '3':
+                    break
+                else:
+                    print("Opción no válida.")
+        elif opcion == '7':
+            print("Saliendo del sistema.")
+            break
+        else:
+            print("Opción no válida.")
+
+# Ejecutar el menú principal
+menu_principal()
