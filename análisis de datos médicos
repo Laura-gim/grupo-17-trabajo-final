@@ -1,3 +1,143 @@
+
+
+
+
+class Paciente:
+    def __init__(self, id_medico, apellido, nombres, dni, edad, genero, direccion, telefono):
+        self.id_medico = id_medico
+        self.apellido = apellido
+        self.nombres = nombres
+        self.dni = dni
+        self.edad = edad
+        self.genero = genero
+        self.direccion = direccion
+        self.telefono = telefono
+        self.historial_clinico = None
+
+    def __str__(self):
+        #Devuelve una representación en texto del paciente para facilitar la visualización
+        return (f"Paciente: {self.nombres} {self.apellido}, DNI: {self.dni}, ID Médico: {self.id_medico}, "
+                f"Edad: {self.edad}, Género: {self.genero}, Dirección: {self.direccion}, Teléfono: {self.telefono}")    
+
+    def agregar_evento_raiz(self, evento):
+        if self.historial_clinico is None:
+            self.historial_clinico = Arbol_General(evento)
+            print(f"Evento raíz '{evento.descripcion}' agregado.")
+        else:
+            self.historial_clinico = agregar_nodo(self.historial_clinico, evento)
+
+    def agregar_evento(self, evento_padre, nuevo_evento):
+        self.historial_clinico = agregar_hijo_nodo(self.historial_clinico, evento_padre, nuevo_evento)
+
+    def eliminar_evento(self, evento_padre, evento_a_eliminar):
+        if eliminar_nodo(self.historial_clinico, evento_padre, evento_a_eliminar):
+            print(f"Evento '{evento_a_eliminar.descripcion}' eliminado.")
+        else:
+            print(f"Evento '{evento_a_eliminar.descripcion}' no encontrado.")
+
+    def mostrar_historial_preorden(self): # no se usó
+        print("\nHistorial Médico (Preorden):")
+        preorden(self.historial_clinico)
+
+    def mostrar_historial_postorden(self):# no se usó
+        print("\nHistorial Médico (Postorden):")
+        postorden(self.historial_clinico)
+
+    def actualizar_datos_personales(self, apellido=None, nombres=None, dni=None, genero=None, edad=None, direccion=None, telefono=None):
+       # funcion para actualizar datos personales
+        if apellido:
+            self.apellido = apellido
+        if nombres:
+            self.nombres = nombres
+        if dni:
+            self.dni = dni
+        if genero:
+            self.genero = genero
+        if edad:
+            self.edad = edad
+        if direccion:
+            self.direccion = direccion
+        if telefono:
+            self.telefono = telefono
+        print(f"Datos personales actualizados para el paciente con ID {self.id_medico}.")
+
+    def mostrar_historial(self, nodo, nivel=0):
+        # Muestra el historial clínico en formato de árbol con indentación
+        if nodo is not None:
+        # Muestra el evento actual con indentación
+            print("  " * nivel + f"- {nodo.evento}")
+            
+        # Recorre los hijos del nodo (consultas, diagnósticos, tratamientos)
+            hijo = nodo.hijos
+            while hijo is not None:
+                self.mostrar_historial(hijo, nivel + 1)  # Aumenta el nivel para la indentación
+                hijo = hijo.sig
+ 
+    
+def ingresar_datos_paciente():
+    try:
+        id_medico = int(input("Ingrese el ID médico del paciente: "))
+        apellido = input("Ingrese el apellido del paciente: ")
+        nombres = input("Ingrese el nombre del paciente: ")
+        dni = int(input("Ingrese el DNI del paciente: "))
+        edad = int(input("Ingrese la edad del paciente: "))
+        genero = input("Ingrese el género del paciente: ")
+        direccion = input("Ingrese la dirección del paciente: ")
+        telefono = input("Ingrese el teléfono del paciente: ")
+        return Paciente(id_medico, apellido, nombres, dni, edad, genero, direccion, telefono)
+    except ValueError as e:
+        print(f"Error en los datos ingresados: {e}")
+        return None
+
+def mostrar_informacion_paciente(arbol, id_medico):
+    paciente = arbol.buscar(id_medico)
+    if paciente:
+        paciente.mostrar_informacion()
+
+
+def mostrar_informacion(self):
+    print(f"\nInformación del Paciente: {self.nombres} {self.apellido}")
+    print(f"ID Médico: {self.id_medico}")
+    print(f"DNI: {self.dni}")
+    print(f"Edad: {self.edad}")
+    print(f"Género: {self.genero}")
+    print(f"Dirección: {self.direccion}")
+    print(f"Teléfono: {self.telefono}")
+        
+    if self.historial_clinico:
+        print("\nHistorial Clínico:")
+        self.mostrar_historial(self.historial_clinico, nivel=0)
+    else:
+        print("\nNo se ha iniciado un historial clínico para este paciente.")
+
+
+
+
+def actualizar_datos_paciente(paciente):
+    print("Deje el campo vacío si no desea cambiarlo.")
+    apellido = input("Nuevo apellido: ")
+    nombres = input("Nuevo nombre: ")
+    dni = input("Nuevo DNI: ")
+    edad = input("Nueva edad: ")
+    genero = input("Nuevo género: ")
+    direccion = input("Nueva dirección: ")
+    telefono = input("Nuevo teléfono: ")
+    paciente.actualizar_datos_personales(
+        apellido=apellido or None,
+        nombres=nombres or None,
+        dni=int(dni) if dni else None,
+        edad=int(edad) if edad else None,
+        genero=genero or None,
+        direccion=direccion or None,
+        telefono=telefono or None
+    )
+def mostrar_evento(evento, nivel):
+    print("  " * nivel + f"- {evento.descripcion}")
+    for subevento in evento.subeventos:
+        mostrar_evento(subevento, nivel + 1)
+
+import heapq # no lo utilizamos, modificamos la clase turno
+
 class EventosMedico:
     def __init__(self, tipo, descripcion):
         self.tipo = tipo  # Tipo de evento, como "Consulta", "Diagnostico" o "Tratamiento"
@@ -183,86 +323,6 @@ class ArbolPacientesBST:
         while nodo.izq is not None:
             nodo = nodo.izq
         return nodo
-
-
-
-class Paciente:
-    def __init__(self, id_medico, apellido, nombres, dni, edad, genero, direccion, telefono):
-        self.id_medico = id_medico
-        self.apellido = apellido
-        self.nombres = nombres
-        self.dni = dni
-        self.edad = edad
-        self.genero = genero
-        self.direccion = direccion
-        self.telefono = telefono
-        self.historial_clinico = None
-
-    def __str__(self):
-        #Devuelve una representación en texto del paciente para facilitar la visualización
-        return (f"Paciente: {self.nombres} {self.apellido}, DNI: {self.dni}, ID Médico: {self.id_medico}, "
-                f"Edad: {self.edad}, Género: {self.genero}, Dirección: {self.direccion}, Teléfono: {self.telefono}")    
-
-    def agregar_evento_raiz(self, evento):
-        if self.historial_clinico is None:
-            self.historial_clinico = Arbol_General(evento)
-            print(f"Evento raíz '{evento.descripcion}' agregado.")
-        else:
-            self.historial_clinico = agregar_nodo(self.historial_clinico, evento)
-
-    def agregar_evento(self, evento_padre, nuevo_evento):
-        self.historial_clinico = agregar_hijo_nodo(self.historial_clinico, evento_padre, nuevo_evento)
-
-    def eliminar_evento(self, evento_padre, evento_a_eliminar):
-        if eliminar_nodo(self.historial_clinico, evento_padre, evento_a_eliminar):
-            print(f"Evento '{evento_a_eliminar.descripcion}' eliminado.")
-        else:
-            print(f"Evento '{evento_a_eliminar.descripcion}' no encontrado.")
-
-    def mostrar_historial_preorden(self): # no se usó
-        print("\nHistorial Médico (Preorden):")
-        preorden(self.historial_clinico)
-
-    def mostrar_historial_postorden(self):# no se usó
-        print("\nHistorial Médico (Postorden):")
-        postorden(self.historial_clinico)
-
-    def actualizar_datos_personales(self, apellido=None, nombres=None, dni=None, genero=None, edad=None, direccion=None, telefono=None):
-       # funcion para actualizar datos personales
-        if apellido:
-            self.apellido = apellido
-        if nombres:
-            self.nombres = nombres
-        if dni:
-            self.dni = dni
-        if genero:
-            self.genero = genero
-        if edad:
-            self.edad = edad
-        if direccion:
-            self.direccion = direccion
-        if telefono:
-            self.telefono = telefono
-        print(f"Datos personales actualizados para el paciente con ID {self.id_medico}.")
-
-    def mostrar_historial(self, nodo, nivel=0):
-        # Muestra el historial clínico en formato de árbol con indentación
-        if nodo is not None:
-        # Muestra el evento actual con indentación
-            print("  " * nivel + f"- {nodo.evento}")
-            
-        # Recorre los hijos del nodo (consultas, diagnósticos, tratamientos)
-            hijo = nodo.hijos
-            while hijo is not None:
-                self.mostrar_historial(hijo, nivel + 1)  # Aumenta el nivel para la indentación
-                hijo = hijo.sig
- 
-    
-
-
-import heapq # sirve para implementar un algoritmo de ordenación similar a un arbol. (se puede reemplazar por una estructura de cola, hay que pensarlo)
-
-
 # Clase para gestionar los turnos. se puede modificar para agregar un limite al numero de turnos otorgados. se puede hacer una estructura diferente
 
 class Turno:
@@ -273,86 +333,54 @@ class Turno:
     def __lt__(self, otro):
         return self.prioridad < otro.prioridad
 
-class ColaDeTurnos:
+class MaxHeap:
     def __init__(self):
-        self.turnos = []
+        self.heap = []
 
-    def agregar_turno(self, paciente, es_urgente):
-        prioridad = 0 if es_urgente else 1
-        turno = Turno(paciente, prioridad)
-        heapq.heappush(self.turnos, turno)
-        print(f"Turno {'urgente' if es_urgente else 'regular'} asignado a {paciente.nombres} {paciente.apellido}.")
+    def swapp(self, i, j):
+        #Intercambia dos elementos en el heap
+        self.heap[i], self.heap[j] = self.heap[j], self.heap[i]
 
-    def siguiente_turno(self):
-        if not self.turnos:
-            print("No hay turnos en espera.")
+    def burbujeo_arriba(self, index):
+        #Realiza el burbujeo hacia arriba
+        parent = (index - 1) // 2
+        if index > 0 and self.heap[index][1] > self.heap[parent][1]:  # Ordena por gravedad
+            self.swapp(index, parent)
+            self.burbujeo_arriba(parent)
+
+    def burbujeo_abajo(self, index):
+        #Realiza el burbujeo hacia abajo 
+        left = 2 * index + 1
+        right = 2 * index + 2
+        largest = index
+
+        if left < len(self.heap) and self.heap[left][1] > self.heap[largest][1]:
+            largest = left
+        if right < len(self.heap) and self.heap[right][1] > self.heap[largest][1]:
+            largest = right
+        if largest != index:
+            self.swapp(index, largest)
+            self.burbujeo_abajo(largest)
+
+    def insertar(self, paciente, gravedad):
+        #Inserta un paciente con un nivel de gravedad en el heap. hay que pensar cómo esos nives se asocian a sintomas o enfermdades
+        self.heap.append((paciente, gravedad))  # Inserta el paciente con su prioridad
+        self.burbujeo_arriba(len(self.heap) - 1)
+
+    def extraer_max(self):
+        #Extrae y devuelve el paciente con la máxima gravedad.
+        if len(self.heap) == 0:
             return None
-        turno = heapq.heappop(self.turnos)
-        print(f"Próximo turno para {turno.paciente.nombres} {turno.paciente.apellido}.")
-        return turno.paciente
+        if len(self.heap) == 1:
+            return self.heap.pop()[0]
 
-# Funciones del menú
-def ingresar_datos_paciente():
-    try:
-        id_medico = int(input("Ingrese el ID médico del paciente: "))
-        apellido = input("Ingrese el apellido del paciente: ")
-        nombres = input("Ingrese el nombre del paciente: ")
-        dni = int(input("Ingrese el DNI del paciente: "))
-        edad = int(input("Ingrese la edad del paciente: "))
-        genero = input("Ingrese el género del paciente: ")
-        direccion = input("Ingrese la dirección del paciente: ")
-        telefono = input("Ingrese el teléfono del paciente: ")
-        return Paciente(id_medico, apellido, nombres, dni, edad, genero, direccion, telefono)
-    except ValueError as e:
-        print(f"Error en los datos ingresados: {e}")
-        return None
-
-def mostrar_informacion_paciente(arbol, id_medico):
-    paciente = arbol.buscar(id_medico)
-    if paciente:
-        paciente.mostrar_informacion()
-
-
-def mostrar_informacion(self):
-    print(f"\nInformación del Paciente: {self.nombres} {self.apellido}")
-    print(f"ID Médico: {self.id_medico}")
-    print(f"DNI: {self.dni}")
-    print(f"Edad: {self.edad}")
-    print(f"Género: {self.genero}")
-    print(f"Dirección: {self.direccion}")
-    print(f"Teléfono: {self.telefono}")
-        
-    if self.historial_clinico:
-        print("\nHistorial Clínico:")
-        self.mostrar_historial(self.historial_clinico, nivel=0)
-    else:
-        print("\nNo se ha iniciado un historial clínico para este paciente.")
+        root = self.heap[0][0]
+        self.heap[0] = self.heap.pop()
+        self.burbujeo_abajo(0)
+        return root
 
 
 
-
-def actualizar_datos_paciente(paciente):
-    print("Deje el campo vacío si no desea cambiarlo.")
-    apellido = input("Nuevo apellido: ")
-    nombres = input("Nuevo nombre: ")
-    dni = input("Nuevo DNI: ")
-    edad = input("Nueva edad: ")
-    genero = input("Nuevo género: ")
-    direccion = input("Nueva dirección: ")
-    telefono = input("Nuevo teléfono: ")
-    paciente.actualizar_datos_personales(
-        apellido=apellido or None,
-        nombres=nombres or None,
-        dni=int(dni) if dni else None,
-        edad=int(edad) if edad else None,
-        genero=genero or None,
-        direccion=direccion or None,
-        telefono=telefono or None
-    )
-def mostrar_evento(evento, nivel):
-    print("  " * nivel + f"- {evento.descripcion}")
-    for subevento in evento.subeventos:
-        mostrar_evento(subevento, nivel + 1)
 
     
 
@@ -420,7 +448,7 @@ def gestionar_historial(paciente):
 # Menú principal de gestión de pacientes
 def menu_principal():
     arbol_pacientes = ArbolPacientesBST()
-    cola_turnos = ColaDeTurnos()
+    cola_turnos = MaxHeap()
 
     while True:
         print("\nGestión de Pacientes")
@@ -457,6 +485,7 @@ def menu_principal():
             paciente = arbol_pacientes.buscar(id_medico)
             if paciente:
                 gestionar_historial(paciente)
+
         elif opcion == '6':
             while True:
                 print("\nGestión de Turnos")
@@ -469,14 +498,24 @@ def menu_principal():
                     id_medico = int(input("Ingrese el ID del paciente para asignar turno: "))
                     paciente = arbol_pacientes.buscar(id_medico)
                     if paciente:
-                        es_urgente = input("¿Es un turno urgente? (s/n): ").lower() == 's'
-                        cola_turnos.agregar_turno(paciente, es_urgente)
+                        gravedad = int(input("Ingrese el nivel de gravedad (mayor número indica mayor prioridad): "))
+                        cola_turnos.insertar(paciente, gravedad)
+                        print(f"Turno asignado a {paciente.nombres} {paciente.apellido} con gravedad {gravedad}.")
+                    else:
+                        print("Paciente no encontrado.")
                 elif opcion_turno == '2':
-                    cola_turnos.siguiente_turno()
+                    paciente = cola_turnos.extraer_max()
+                    if paciente:
+                        print(f"Próximo turno para {paciente.nombres} {paciente.apellido}.")
+                    else:
+                        print("No hay turnos en espera.")
                 elif opcion_turno == '3':
                     break
                 else:
                     print("Opción no válida.")
+
+             
+             
         elif opcion == '7':
             print("Saliendo del sistema.")
             break
