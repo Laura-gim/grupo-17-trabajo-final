@@ -1,0 +1,201 @@
+import heapq
+import sys #----> este módulo provee acceso a algunas variables usadas o mantenidas por el intéprete y a funciones que interactúan
+
+class Hospital:
+    def __init__(self, nombre):
+        self.nombre = nombre
+        self.pacientes = []
+
+    def __str__(self): #limitado al nombre, se puede agregar otros datos, igual hacemos referencia a nombre completo y apellido
+        return self.nombre
+
+    def agregar_paciente(self, paciente):
+        #Añade un paciente a la lista de pacientes del hospital
+        self.pacientes.append(paciente)
+        print(f"Paciente {paciente} agregado a {self.nombre}.")
+
+    def remover_paciente(self, paciente):
+        #Remueve un paciente si existe.
+        try:
+            self.pacientes.remove(paciente)
+            print(f"Paciente {paciente} transferido desde {self.nombre}.")
+        except ValueError:
+            print(f"Error: El paciente {paciente} no está en {self.nombre}.")
+
+class GrafoHospitales:
+    def __init__(self):
+        self.hospitales = {}  # Almacena hospitales (nodos) por nombre
+        self.conexiones = {}  # Almacena las conexiones y distancias entre hospitales
+
+    def agregar_hospital(self, nombre):
+        #Agrega un hospital al grafo
+        if nombre in self.hospitales:
+            print(f"El hospital {nombre} ya existe.")
+            return
+        hospital = Hospital(nombre)
+        self.hospitales[nombre] = hospital
+        self.conexiones[nombre] = {}
+        print(f"Hospital {nombre} agregado a la red hospitalaria.")
+
+    def conectar_hospitales(self, origen, destino, distancia): #se utiliza un diccionario
+        #Conecta dos hospitales con una distancia específica. Mediante el menú se establece el origen, destino y distancia, es decir, ingresado x el usuario
+        if origen not in self.hospitales or destino not in self.hospitales: #1° busca en la red al hospital ingresado x el usuario
+            print("Error: Uno o ambos hospitales no existen.") #sino existe ----> error
+            return
+        if origen == destino: #se deben dar las dos condiciones, que exista el hospital y que el destino no sea el mismo
+            print("Error: No se puede conectar un hospital consigo mismo.")
+            return
+        self.conexiones[origen][destino] = distancia
+        self.conexiones[destino][origen] = distancia
+        print(f"Conexión establecida entre {origen} y {destino} con distancia {distancia}.")
+
+    def eliminar_hospital(self, nombre):
+        #Elimina un hospital y sus conexiones.
+        if nombre not in self.hospitales:
+            print(f"Error: El hospital {nombre} no existe.")
+            return
+        # Elimina las conexiones
+        for destino in list(self.conexiones[nombre].keys()): #<----consulta los datos del diccionario, devuelve unnuevo objeto de vista que contiene una lista de todas las claves del diccionario
+            self.conexiones[destino].pop(nombre, None) #<---- .pop elimina por defecto el último elemento de la lista, pero si se pasa como paramétro un índice permite borrar elementos diferentes al ultimo
+        # Elimina el hospital
+        self.conexiones.pop(nombre)
+        self.hospitales.pop(nombre)
+        print(f"Hospital {nombre} eliminado del grafo.")
+
+    def encontrar_ruta_corta(self, origen, destino):
+        #Encuentra la ruta más corta entre dos hospitales utilizando Dijkstra ----> llamada a este método permite encontrar el camino + corto entre dos puntos
+        if origen not in self.hospitales or destino not in self.hospitales:
+            print("Error: Uno o ambos hospitales no existen en el grafo.")
+            return None
+
+        # Diccionario de distancias inicializado en infinito
+        distancias = {hospital: sys.maxsize for hospital in self.hospitales}
+        distancias[origen] = 0
+        # Heap para mantener la prioridad de la distancia más corta
+        heap = [(0, origen)]
+        padres = {hospital: None for hospital in self.hospitales}
+
+        while heap:
+            distancia_actual, hospital_actual = heapq.heappop(heap) #heapq utilizado para trabajar con listas, implementa un algoritmo de ordenación de monticulo
+            if hospital_actual == destino:                          #heappop sirve para extraer y devolver el elemento mas pequeño del monton, manteniendo su estructura
+                break
+            for vecino, peso in self.conexiones[hospital_actual].items():
+                nueva_distancia = distancia_actual + peso
+                if nueva_distancia < distancias[vecino]:
+                    distancias[vecino] = nueva_distancia
+                    padres[vecino] = hospital_actual
+                    heapq.heappush(heap, (nueva_distancia, vecino))
+
+        # Reconstruye la ruta desde destino hasta origen
+        ruta = []
+        nodo_actual = destino
+        while nodo_actual:
+            ruta.append(nodo_actual)
+            nodo_actual = padres[nodo_actual]
+        ruta.reverse() #invertir el orden de los elemntos de la lista
+
+        if distancias[destino] == sys.maxsize: #sys.maxsize define el tamaño de una lista, diccionario, cadena u otra estructura, en este caso el grafo
+            print(f"No hay una ruta disponible de {origen} a {destino}.")
+            return None
+        print(f"Ruta más corta desde {origen} a {destino}: {' -> '.join(ruta)} con distancia {distancias[destino]}") #join se utiliza para unir los elementos de un iterable en una cadena, separandolos con uun string especifico
+        return ruta, distancias[destino]
+
+    def transferir_paciente(self, nombre_paciente, origen, destino):
+        #Transfiere un paciente entre hospitales según la ruta más corta."""
+        if origen not in self.hospitales or destino not in self.hospitales:
+            print("Error: Uno o ambos hospitales no existen en la red hospitalaria.")
+            return
+        if origen == destino:
+            print("Error: El origen y destino son el mismo hospital.")
+            return
+
+        ruta, distancia = self.encontrar_ruta_corta(origen, destino)
+        if ruta:
+            paciente = next((p for p in self.hospitales[origen].pacientes if p == nombre_paciente), None)
+            if paciente:
+                self.hospitales[origen].remover_paciente(paciente)
+                self.hospitales[destino].agregar_paciente(paciente)
+                print(f"Paciente {nombre_paciente} transferido de {origen} a {destino}.")
+            else:
+                print(f"Error: El paciente {nombre_paciente} no está en el hospital {origen}.")
+
+    def mostrar_red_hospitalaria(self):
+        #Muestra la red de hospitales y sus conexiones
+        print("\nRed de Hospitales:")
+        for hospital, conexiones in self.conexiones.items():
+            conexiones_str = ', '.join([f"{destino}({distancia})" for destino, distancia in conexiones.items()])
+            print(f"{hospital}: {conexiones_str}")
+
+def menu_interactivo():
+    grafo_hospitales = GrafoHospitales()
+    
+    while True:
+        print("\n--- MENÚ DE GESTIÓN DE LA RED HOSPITALARIA ---")
+        print("1. Agregar hospital")
+        print("2. Conectar hospitales")
+        print("3. Eliminar hospital")
+        print("4. Mostrar red hospitalaria")
+        print("5. Agregar paciente a hospital")
+        print("6. Remover paciente de hospital")
+        print("7. Transferir paciente entre hospitales")
+        print("8. Encontrar ruta más corta entre hospitales")
+        print("9. Salir")
+        
+        opcion = input("Seleccione una opción: ")
+        
+        if opcion == '1': #Opción 1: Agrega un nuevo hospital al grafo
+            nombre = input("Ingrese el nombre del hospital a agregar: ")
+            grafo_hospitales.agregar_hospital(nombre)
+        
+        elif opcion == '2': #Opción 2: Conecta dos hospitales con una distancia específica
+            origen = input("Ingrese el nombre del hospital de origen: ")
+            destino = input("Ingrese el nombre del hospital de destino: ")
+            try:
+                distancia = float(input("Ingrese la distancia entre hospitales: "))
+                grafo_hospitales.conectar_hospitales(origen, destino, distancia)
+            except ValueError:
+                print("Error: La distancia debe ser un número.")
+        
+        elif opcion == '3': #Opción 3: Elimina un hospital y sus conexiones del grafo
+            nombre = input("Ingrese el nombre del hospital a eliminar: ")
+            grafo_hospitales.eliminar_hospital(nombre)
+        
+        elif opcion == '4':#Opción 4: Muestra la red hospitalaria completa, con todas las conexiones y distancias
+            grafo_hospitales.mostrar_red_hospitalaria()
+        
+        elif opcion == '5': #Opción 5: Agrega un paciente a la lista de pacientes de un hospital específico
+            hospital = input("Ingrese el nombre del hospital: ")
+            paciente = input("Ingrese el nombre del paciente: ")
+            if hospital in grafo_hospitales.hospitales:
+                grafo_hospitales.hospitales[hospital].agregar_paciente(paciente)
+            else:
+                print(f"Error: El hospital '{hospital}' no existe.")
+        
+        elif opcion == '6': #Opción 6: Remueve un paciente de un hospital
+            hospital = input("Ingrese el nombre del hospital: ")
+            paciente = input("Ingrese el nombre del paciente a remover: ")
+            if hospital in grafo_hospitales.hospitales:
+                grafo_hospitales.hospitales[hospital].remover_paciente(paciente)
+            else:
+                print(f"Error: El hospital '{hospital}' no existe.")
+        
+        elif opcion == '7': #Opción 7: Transfiere un paciente de un hospital a otro, usando la ruta más corta
+            nombre_paciente = input("Ingrese el nombre del paciente a transferir: ")
+            origen = input("Ingrese el hospital de origen: ")
+            destino = input("Ingrese el hospital de destino: ")
+            grafo_hospitales.transferir_paciente(nombre_paciente, origen, destino)
+        
+        elif opcion == '8': #Opción 8: Encuentra la ruta más corta entre dos hospitales
+            origen = input("Ingrese el hospital de origen: ")
+            destino = input("Ingrese el hospital de destino: ")
+            grafo_hospitales.encontrar_ruta_corta(origen, destino)
+        
+        elif opcion == '9': #opcion salir
+            print("Saliendo del sistema de gestión de la red hospitalaria.")
+            break
+        
+        else:
+            print("Opción no válida. Intente de nuevo.")
+
+# Ejecutar el menú interactivo
+menu_interactivo()
