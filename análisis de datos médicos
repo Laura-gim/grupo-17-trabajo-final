@@ -1,7 +1,4 @@
 
-
-
-
 class Paciente:
     def __init__(self, id_medico, apellido, nombres, dni, edad, genero, direccion, telefono):
         self.id_medico = id_medico
@@ -379,10 +376,6 @@ class MaxHeap:
         self.burbujeo_abajo(0)
         return root
 
-
-
-
-    
 
 def gestionar_historial(paciente):
     raiz=None
