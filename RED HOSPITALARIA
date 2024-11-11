@@ -1,6 +1,6 @@
 import heapq
 import sys #----> este módulo provee acceso a algunas variables usadas o mantenidas por el intéprete y a funciones que interactúan
-
+from collections import deque, defaultdict
 class Hospital:
     def __init__(self, nombre):
         self.nombre = nombre
