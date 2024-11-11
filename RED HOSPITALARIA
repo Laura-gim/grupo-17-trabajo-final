@@ -76,7 +76,7 @@ class GrafoHospitales:
                     stack.append((vecino, camino + [vecino]))
         return None   
 
-    def encontrar_ruta_corta(self, origen, destino):
+    def encontrar_ruta_corta(self, origen, destino): #al método se lo puede llamar Dijkstra, el menú se puede cambiar también por ruta de emergencia para ambulancia!
         #Encuentra la ruta más corta entre dos hospitales utilizando Dijkstra ----> llamada a este método permite encontrar el camino + corto entre dos puntos
         if origen not in self.hospitales or destino not in self.hospitales:
             print("Error: Uno o ambos hospitales no existen en el grafo.")
@@ -139,7 +139,20 @@ class GrafoHospitales:
         for hospital, conexiones in self.conexiones.items():
             conexiones_str = ', '.join([f"{destino}({distancia})" for destino, distancia in conexiones.items()])
             print(f"{hospital}: {conexiones_str}")
+# hay que hacer el algoritmo de ordenamiento topológico
+class PasoDiagnostico:
+    def __init__(self, nombre):
+        self.nombre = nombre
+        self.dependencias = []
 
+    def __str__(self):
+        return self.nombre
+
+
+class Diagnostico:
+    def __init__(self):
+        self.grafo_diagnostico = defaultdict(list) #import defaultdict que se comporta casi como un diccionario pero si intenta acceder o modificar una clave faltante, este creará automaticamente la clave y generará un valor predeterminado para ella
+        self.pasos_diagnostico = {}
 def menu_interactivo():
     grafo_hospitales = GrafoHospitales()
     
