@@ -75,7 +75,19 @@ class GrafoHospitales:
                 for (vecino, _) in self.grafo[nodo]:
                     stack.append((vecino, camino + [vecino]))
         return None   
+    def bfs(self, inicio, objetivo):
+        queue = deque([(inicio, [inicio])])
+        visitados = set([inicio])
 
+        while queue:
+            (nodo, camino) = queue.popleft()
+            if nodo == objetivo:
+                return camino
+            for (vecino, _) in self.grafo[nodo]:
+                if vecino not in visitados:
+                    visitados.add(vecino)
+                    queue.append((vecino, camino + [vecino]))
+        return None   
     def encontrar_ruta_corta(self, origen, destino): #al método se lo puede llamar Dijkstra, el menú se puede cambiar también por ruta de emergencia para ambulancia!
         #Encuentra la ruta más corta entre dos hospitales utilizando Dijkstra ----> llamada a este método permite encontrar el camino + corto entre dos puntos
         if origen not in self.hospitales or destino not in self.hospitales:
@@ -165,8 +177,10 @@ def menu_interactivo():
         print("5. Agregar paciente a hospital")
         print("6. Remover paciente de hospital")
         print("7. Transferir paciente entre hospitales")
-        print("8. Encontrar ruta más corta entre hospitales")
+        print("8. Encontrar ruta más corta entre hospitales (Dijkstra)")
         print("9. Encontrar camino DFS entre hospitales")
+        print("10. Encontrar camino BFS entre hospitales")
+        #opcion 11 ordenamiento topologico
         print("12. Salir")
         
         opcion = input("Seleccione una opción: ")
@@ -217,6 +231,8 @@ def menu_interactivo():
             origen = input("Ingrese el hospital de origen: ")
             destino = input("Ingrese el hospital de destino: ")
             grafo_hospitales.encontrar_ruta_corta(origen, destino)
+
+        elif opcion == '9':
             inicio = input("Hospital de inicio: ")
             objetivo = input("Hospital objetivo: ")
             camino = grafo_hospitales.dfs(inicio, objetivo)
@@ -224,8 +240,15 @@ def menu_interactivo():
                 print("Camino encontrado (DFS):", " -> ".join(camino))
             else:
                 print("No se encontró un camino usando DFS.")
-
-        
+        elif opcion == '10':
+            inicio = input("Hospital de inicio: ")
+            objetivo = input("Hospital objetivo: ")
+            camino = grafo_hospitales.bfs(inicio, objetivo)
+            if camino:
+                print("Camino encontrado (BFS):", " -> ".join(camino))
+            else:
+                print("No se encontró un camino usando BFS.")
+        #opcion 11 ordenamiento topologico        
         elif opcion == '12': #opcion salir
             print("Saliendo del sistema de gestión de la red hospitalaria.")
             break
