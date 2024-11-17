@@ -68,12 +68,16 @@ class GrafoHospitales:
         visitados = set() #crea un conjunto vacio que almacena los nodos visitados y así evitar ciclos
 
         while stack: #stack es la pila que itera mientras esta no esté vacía
-            (nodo, camino) = stack.pop() #extrae el último elemento de la pila. nodo: es el ultimo nodo que se está procesando y el camino que lo lleva al nodo actual
+            elemento= stack.pop() #extrae el último elemento de la pila. nodo: es el ultimo nodo que se está procesando y el camino que lo lleva al nodo actual
+            if not isinstance(elemento, tuple) or len(elemento) != 2: #evitar ValueError: not enough values to unpack (expected 2, got 1)
+                print(f"Formato inesperado en la pila: {elemento}")
+                continue  # Ignorar elementos con formato incorrecto
+            nodo, camino = elemento #desempaqueta
             if nodo not in visitados: #verifica si el nodo ya ha sido visitado
                 if nodo == objetivo: # si  no ha sido visitado continua el proceso verificando si el nodo actual es objetivo devolviendo el camino que lleva al objetivo
                     return camino
                 visitados.add(nodo) #marca nodo como visitado
-                for (vecino, _) in self.grafo[nodo]: #reccorre todos los vecinos del nodo actual, cada vecino es una tupla (vecino,peso) pero solo se necesita al vecino
+                for (vecino, _) in self.grafo[nodo].items(): #reccorre todos los vecinos del nodo actual, cada vecino es una tupla (vecino,peso) pero solo se necesita al vecino
                     stack.append((vecino, camino + [vecino])) #agrega cada vecino a la pila junto con el camino actualizado que incluye este vecino
         return None   #sino ignora el nodo
            
@@ -82,10 +86,14 @@ class GrafoHospitales:
         visitados = set([inicio]) #iniccia un conjunto de nodos visitados, comenzando con el nodo de inicio
 
         while queue:#itera mientras la cola no esté vacia
-            (nodo, camino) = queue.popleft() #extrae el primer elemnto de la cola
+            elemento= queue.popleft()
+            if not isinstance(elemento, tuple) or len(elemento) != 2:
+                print(f"Formato inesperado en la cola: {elemento}")
+                continue
+            nodo, camino=elemento
             if nodo == objetivo:
                 return camino
-            for (vecino, _) in self.grafo[nodo]:
+            for (vecino, _) in self.grafo[nodo].items():
                 if vecino not in visitados:
                     visitados.add(vecino) #marca al vecino como visitado añadiendolo al conjunto de visitados
                     queue.append((vecino, camino + [vecino])) #agrega vecino a la cola
