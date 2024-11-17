@@ -78,17 +78,17 @@ class GrafoHospitales:
         return None   #sino ignora el nodo
            
     def bfs(self, inicio, objetivo):
-        queue = deque([(inicio, [inicio])])
-        visitados = set([inicio])
+        queue = deque([(inicio, [inicio])]) #crea una cola(FIFO: primero en entrar, primero en salir)
+        visitados = set([inicio]) #iniccia un conjunto de nodos visitados, comenzando con el nodo de inicio
 
-        while queue:
-            (nodo, camino) = queue.popleft()
+        while queue:#itera mientras la cola no esté vacia
+            (nodo, camino) = queue.popleft() #extrae el primer elemnto de la cola
             if nodo == objetivo:
                 return camino
             for (vecino, _) in self.grafo[nodo]:
                 if vecino not in visitados:
-                    visitados.add(vecino)
-                    queue.append((vecino, camino + [vecino]))
+                    visitados.add(vecino) #marca al vecino como visitado añadiendolo al conjunto de visitados
+                    queue.append((vecino, camino + [vecino])) #agrega vecino a la cola
         return None   
     def encontrar_ruta_corta(self, origen, destino): #al método se lo puede llamar Dijkstra, el menú se puede cambiar también por ruta de emergencia para ambulancia!
         #Encuentra la ruta más corta entre dos hospitales utilizando Dijkstra ----> llamada a este método permite encontrar el camino + corto entre dos puntos
