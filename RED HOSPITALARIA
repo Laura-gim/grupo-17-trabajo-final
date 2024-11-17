@@ -45,7 +45,7 @@ class GrafoHospitales:
         if origen == destino: #se deben dar las dos condiciones, que exista el hospital y que el destino no sea el mismo
             print("Error: No se puede conectar un hospital consigo mismo.")
             return
-        self.conexiones[origen][destino] = distancia
+        self.conexiones[origen][destino] = distancia #mediante estas conexiones determinamos que el grafo es no dirigido(bidireccional)
         self.conexiones[destino][origen] = distancia
         print(f"Conexión establecida entre {origen} y {destino} con distancia {distancia}.")
 
@@ -63,18 +63,20 @@ class GrafoHospitales:
         print(f"Hospital {nombre} eliminado del grafo.")
 
     def dfs(self, inicio, objetivo):
-        stack = [(inicio, [inicio])]
-        visitados = set()
+        stack = [(inicio, [inicio])]#crea una pila (LIFO: el ultimo en trar, el primero en salir) que contiene una tupla
+                                        #inicio: el nodo de inicio, [inicio]:un camino que inicialmente, solo contiene un nodo de inicio
+        visitados = set() #crea un conjunto vacio que almacena los nodos visitados y así evitar ciclos
 
-        while stack:
-            (nodo, camino) = stack.pop()
-            if nodo not in visitados:
-                if nodo == objetivo:
+        while stack: #stack es la pila que itera mientras esta no esté vacía
+            (nodo, camino) = stack.pop() #extrae el último elemento de la pila. nodo: es el ultimo nodo que se está procesando y el camino que lo lleva al nodo actual
+            if nodo not in visitados: #verifica si el nodo ya ha sido visitado
+                if nodo == objetivo: # si  no ha sido visitado continua el proceso verificando si el nodo actual es objetivo devolviendo el camino que lleva al objetivo
                     return camino
-                visitados.add(nodo)
-                for (vecino, _) in self.grafo[nodo]:
-                    stack.append((vecino, camino + [vecino]))
-        return None   
+                visitados.add(nodo) #marca nodo como visitado
+                for (vecino, _) in self.grafo[nodo]: #reccorre todos los vecinos del nodo actual, cada vecino es una tupla (vecino,peso) pero solo se necesita al vecino
+                    stack.append((vecino, camino + [vecino])) #agrega cada vecino a la pila junto con el camino actualizado que incluye este vecino
+        return None   #sino ignora el nodo
+           
     def bfs(self, inicio, objetivo):
         queue = deque([(inicio, [inicio])])
         visitados = set([inicio])
