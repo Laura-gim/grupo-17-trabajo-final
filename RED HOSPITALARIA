@@ -192,6 +192,45 @@ class Diagnostico:
         else:
             print("Error: existen dependencias cíclicas en los pasos de diagnóstico.")#sino se detecta un ciclo en el grafo
             return []
+    def mostrar_secuencia(self, sintomas):
+        secuencia = self.obtener_secuencia_diagnostico(sintomas) #llama al metodo obtener secuencia
+        if secuencia:
+            print("Secuencia de diagnóstico personalizada en base a los síntomas:")
+            print(" -> ".join(secuencia))
+        else:
+            print("No se pudo generar una secuencia de diagnóstico completa.")
+# Diccionario de referencia de síntomas
+referencia_sintomas = {
+    "fiebre": [
+        "Evaluación de síntomas iniciales",
+        "Prueba de sangre",
+        "Evaluación para infección viral",
+        "Evaluación para infección bacteriana"
+    ],
+    "dolor de cabeza": [
+        "Evaluación de síntomas iniciales",
+        "Consulta general",
+        "Prueba de función neurológica",
+        "Consulta con neurólogo"
+    ],
+    "dificultad para respirar": [
+        "Evaluación de síntomas iniciales",
+        "Prueba de imagen",
+        "Prueba de función pulmonar",
+        "Consulta con neumólogo"
+    ]
+}
+diagnostico = Diagnostico()
+
+# pasos de diagnóstico y sus dependencias 
+diagnostico.agregar_paso("Evaluación de síntomas iniciales")
+diagnostico.agregar_paso("Consulta general", depende_de="Evaluación de síntomas iniciales")
+diagnostico.agregar_paso("Prueba de sangre", depende_de="Consulta general")
+diagnostico.agregar_paso("Prueba de orina", depende_de="Consulta general")
+diagnostico.agregar_paso("Prueba de imagen", depende_de="Evaluación de síntomas iniciales")
+diagnostico.agregar_paso("Prueba de función hepática", depende_de="Prueba de sangre")
+diagnostico.agregar_paso("Prueba de función renal", depende_de="Prueba de sangre")
+
 def menu_interactivo():
     grafo_hospitales = GrafoHospitales()
     
@@ -207,7 +246,7 @@ def menu_interactivo():
         print("8. Encontrar ruta más corta entre hospitales (Dijkstra)")
         print("9. Encontrar camino DFS entre hospitales")
         print("10. Encontrar camino BFS entre hospitales")
-        #opcion 11 ordenamiento topologico
+        print("11. Realizar ordenamiento topológico de diagnóstico")
         print("12. Salir")
         
         opcion = input("Seleccione una opción: ")
@@ -275,7 +314,14 @@ def menu_interactivo():
                 print("Camino encontrado (BFS):", " -> ".join(camino))
             else:
                 print("No se encontró un camino usando BFS.")
-        #opcion 11 ordenamiento topologico        
+        elif opcion == '11':
+            sintomas_usuario = input("Ingrese los síntomas separados por comas: ").split(",")
+            sintomas_usuario = [sintoma.strip() for sintoma in sintomas_usuario]
+            pasos_a_realizar = set()
+            for sintoma in sintomas_usuario:
+                if sintoma in referencia_sintomas:
+                    pasos_a_realizar.update(referencia_sintomas[sintoma])
+            diagnostico.mostrar_secuencia(list(pasos_a_realizar))               
         elif opcion == '12': #opcion salir
             print("Saliendo del sistema de gestión de la red hospitalaria.")
             break
