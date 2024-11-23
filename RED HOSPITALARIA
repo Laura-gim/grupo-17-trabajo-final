@@ -1,6 +1,28 @@
 import heapq
 import sys #----> este módulo provee acceso a algunas variables usadas o mantenidas por el intéprete y a funciones que interactúan
 from collections import deque, defaultdict
+import pickle #permite serializar y deserializar objetos
+#ventajas: puede serializar casi todos los tipos de datos integrados de python, conserva el estdo exacto del objeto, es una buena estructura 
+#para almacenar estructuras recursivas
+#desventajas: no es seguro porque puede ejecutar callables Python maliciosos, puede ser más lento que otros formatos.
+import os # permite interactuar con el sistema operativo, por ej., para crear, eliminar o mover archivos o directorios
+
+# Función para guardar datos en archivos
+def guardar_datos(nombre_archivo, datos):
+    with open(nombre_archivo, 'wb') as archivo:
+        pickle.dump(datos, archivo)
+    print(f"Datos guardados en {nombre_archivo}.")
+
+# Función para cargar datos desde archivos
+def cargar_datos(nombre_archivo):
+    if os.path.exists(nombre_archivo):
+        with open(nombre_archivo, 'rb') as archivo:
+            datos = pickle.load(archivo)
+            print(f"Datos cargados desde {nombre_archivo}.")
+            return datos
+    else:
+        print(f"No se encontró el archivo {nombre_archivo}. Iniciando datos vacíos.")
+        return None
 class Hospital:
     def __init__(self, nombre):
         self.nombre = nombre #inicializa un hospital y una lista vacía de pacientes
@@ -36,6 +58,7 @@ class GrafoHospitales:
         self.hospitales[nombre] = hospital
         self.conexiones[nombre] = {}
         print(f"Hospital {nombre} agregado a la red hospitalaria.")
+        guardar_datos('hospitales.pkl', self)  # Guardar cambios
 
     def conectar_hospitales(self, origen, destino, distancia): #se utiliza un diccionario
         #Conecta dos hospitales con una distancia específica. Mediante el menú se establece el origen, destino y distancia, es decir, ingresado x el usuario
@@ -48,6 +71,7 @@ class GrafoHospitales:
         self.conexiones[origen][destino] = distancia #mediante estas conexiones determinamos que el grafo es no dirigido(bidireccional)
         self.conexiones[destino][origen] = distancia
         print(f"Conexión establecida entre {origen} y {destino} con distancia {distancia}.")
+        guardar_datos('hospitales.pkl', self)  # Guardar cambios
 
     def eliminar_hospital(self, nombre):
         #Elimina un hospital y sus conexiones.
@@ -61,6 +85,7 @@ class GrafoHospitales:
         self.conexiones.pop(nombre)
         self.hospitales.pop(nombre)
         print(f"Hospital {nombre} eliminado del grafo.")
+        guardar_datos('hospitales.pkl', self)  # Guardar cambios
 
     def dfs(self, inicio, objetivo): #profundidad
         stack = [(inicio, [inicio])]#crea una pila (LIFO: el ultimo en trar, el primero en salir) que contiene una tupla
@@ -180,6 +205,7 @@ class Diagnostico:
             self.pasos_diagnostico[paso] = PasoDiagnostico(paso)
         if depende_de:
             self.grafo_diagnostico[depende_de].append(paso) #acá a diferencia del grafo hospitales, este grafo es dirigido según corresponda cada dependencia
+        guardar_datos('hospitales.pkl', self)  # Guardar cambios
 
     def obtener_secuencia_diagnostico(self, sintomas):
         grados_entrada = defaultdict(int) #variable que almacena las dependencias
@@ -226,7 +252,25 @@ referencia_sintomas = {
         "Prueba de imagen",
         "Prueba de función pulmonar",
         "Consulta con neumólogo"
-    ]
+    ],
+    "dolor en el pecho": [
+        "Evaluación de síntomas iniciales",
+        "Electrocardiograma (ECG)",
+        "Consulta con cardiólogo",
+        "Prueba de esfuerzo cardíaco"
+    ],
+    "mareos": [
+        "Evaluación de síntomas iniciales",
+        "Consulta general",
+        "Prueba de función neurológica",
+        "Consulta con neurólogo"
+    ],
+    "fatiga": [
+        "Evaluación de síntomas iniciales",
+        "Prueba de sangre",
+        "Prueba de función hepática",
+        "Prueba de función renal"
+    ]  
 }
 diagnostico = Diagnostico()
 
@@ -234,10 +278,12 @@ diagnostico = Diagnostico()
 diagnostico.agregar_paso("Evaluación de síntomas iniciales")
 diagnostico.agregar_paso("Consulta general", depende_de="Evaluación de síntomas iniciales")
 diagnostico.agregar_paso("Prueba de sangre", depende_de="Consulta general")
-diagnostico.agregar_paso("Prueba de orina", depende_de="Consulta general")
 diagnostico.agregar_paso("Prueba de imagen", depende_de="Evaluación de síntomas iniciales")
-diagnostico.agregar_paso("Prueba de función hepática", depende_de="Prueba de sangre")
-diagnostico.agregar_paso("Prueba de función renal", depende_de="Prueba de sangre")
+diagnostico.agregar_paso("Electrocardiograma (ECG)", depende_de="Consulta general")
+diagnostico.agregar_paso("Consulta con neumólogo", depende_de="Prueba de imagen")
+diagnostico.agregar_paso("Consulta con cardiólogo", depende_de="Electrocardiograma (ECG)")
+diagnostico.agregar_paso("Prueba de función neurológica", depende_de="Consulta general")
+diagnostico.agregar_paso("Evaluación para infección bacteriana", depende_de="Prueba de sangre")
 
 def menu_interactivo():
     grafo_hospitales = GrafoHospitales()
@@ -336,6 +382,9 @@ def menu_interactivo():
         
         else:
             print("Opción no válida. Intente de nuevo.")
+grafo_hospitales = cargar_datos('hospitales.pkl') or GrafoHospitales()
+diagnostico = cargar_datos('diagnostico.pkl') or Diagnostico()
 
+print("Sistema inicializado.")
 # Ejecutar el menú interactivo
 menu_interactivo()
